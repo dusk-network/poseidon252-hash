@@ -1,0 +1,7 @@
+[package]
+name = "poseidon252-hash"
+version = "0.1.0"
+authors = ["Victor Lopez <victor@dusk.network>"]
+edition = "2018"
+
+[dependencies]
