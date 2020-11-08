@@ -5,3 +5,18 @@ authors = ["Victor Lopez <victor@dusk.network>"]
 edition = "2018"
 
 [dependencies]
+hades252 = { git = "https://github.com/dusk-network/hades252", branch = "vlopes11/no-std-scalar", default-features = false }
+dusk-plonk = { git = "https://github.com/dusk-network/plonk", branch = "vlopes11/no-std-scalar", optional = true }
+
+[dependencies.dusk-bls12_381]
+git = "https://github.com/dusk-network/bls12_381"
+branch = "vlope11/scalar-no-std"
+default-features = false
+
+[dev-dependencies]
+anyhow = "1.0"
+rand = "0.7"
+
+[features]
+default = ["std"]
+std = ["hades252/default", "dusk-plonk"]
