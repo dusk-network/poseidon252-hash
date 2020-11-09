@@ -1,16 +1,16 @@
-use dusk_bls12_381::Scalar;
+use dusk_bls12_381::BlsScalar;
 use dusk_plonk::prelude::*;
 use hades252::strategies::{GadgetStrategy, ScalarStrategy, Strategy};
 
-/// The `hash` function takes an arbitrary number of Scalars and returns the
-/// hash, using the `Hades` ScalarStragegy
-pub fn hash(messages: &[Scalar]) -> Scalar {
+/// The `hash` function takes an arbitrary number of BlsScalars and returns the
+/// hash, using the `Hades` BlsScalarStragegy
+pub fn hash(messages: &[BlsScalar]) -> BlsScalar {
     let mut strategy = ScalarStrategy::new();
 
     // The value used to pad the words is zero.
-    let padder = Scalar::zero();
+    let padder = BlsScalar::zero();
     // One will identify the end of messages.
-    let eom = Scalar::one();
+    let eom = BlsScalar::one();
 
     let mut words = pad(messages, hades252::WIDTH, padder, eom);
     // If the words len is less than the Hades252 permutation `hades252::WIDTH` we directly
@@ -23,7 +23,7 @@ pub fn hash(messages: &[Scalar]) -> Scalar {
     // need to collapse the padded limbs. See bottom of pag. 16 of
     // https://eprint.iacr.org/2019/458.pdf
     let words = words.chunks(hades252::WIDTH).fold(
-        vec![Scalar::zero(); hades252::WIDTH],
+        vec![BlsScalar::zero(); hades252::WIDTH],
         |mut inputs, values| {
             let mut values = values.iter();
             inputs
@@ -113,18 +113,18 @@ where
 mod tests {
     use crate::sponge::{hash, hash_gadget, pad};
     use anyhow::Result;
-    use dusk_bls12_381::Scalar;
+    use dusk_bls12_381::BlsScalar;
     use dusk_plonk::prelude::*;
 
     const CAPACITY: usize = 1 << 12;
 
     #[test]
     fn test_scalar_padding_width_3() {
-        let padder = Scalar::zero();
-        let eom = Scalar::one();
-        let two = Scalar::from(2u64);
-        let three = Scalar::from(3u64);
-        let four = Scalar::from(4u64);
+        let padder = BlsScalar::zero();
+        let eom = BlsScalar::one();
+        let two = BlsScalar::from(2u64);
+        let three = BlsScalar::from(3u64);
+        let four = BlsScalar::from(4u64);
 
         assert_eq!(&pad(&[two], 3, padder, eom), &[padder, two, eom]);
         assert_eq!(
@@ -139,11 +139,11 @@ mod tests {
 
     #[test]
     fn test_scalar_padding_width_4() {
-        let padder = Scalar::zero();
-        let eom = Scalar::one();
-        let two = Scalar::from(2u64);
-        let three = Scalar::from(3u64);
-        let four = Scalar::from(4u64);
+        let padder = BlsScalar::zero();
+        let eom = BlsScalar::one();
+        let two = BlsScalar::from(2u64);
+        let three = BlsScalar::from(3u64);
+        let four = BlsScalar::from(4u64);
 
         assert_eq!(&pad(&[two], 4, padder, eom), &[padder, two, eom, padder]);
         assert_eq!(
@@ -160,11 +160,11 @@ mod tests {
     #[cfg(feature = "std")]
     fn test_variable_padding() {
         let mut composer = StandardComposer::new();
-        let padder = composer.add_input(Scalar::zero());
-        let eom = composer.add_input(Scalar::one());
-        let two = composer.add_input(Scalar::from(2u64));
-        let three = composer.add_input(Scalar::from(3u64));
-        let four = composer.add_input(Scalar::from(4u64));
+        let padder = composer.add_input(BlsScalar::zero());
+        let eom = composer.add_input(BlsScalar::one());
+        let two = composer.add_input(BlsScalar::from(2u64));
+        let three = composer.add_input(BlsScalar::from(3u64));
+        let four = composer.add_input(BlsScalar::from(4u64));
 
         assert_eq!(&pad(&[two], 3, padder, eom), &[padder, two, eom]);
         assert_eq!(
@@ -207,7 +207,7 @@ mod tests {
         // Apply Poseidon Sponge hash to the inputs
         let computed_o_var = hash_gadget(composer, &i_var);
 
-        // Check that the Gadget sponge hash result = Scalar sponge hash result
+        // Check that the Gadget sponge hash result = BlsScalar sponge hash result
         composer.add_gate(
             o_var,
             computed_o_var,

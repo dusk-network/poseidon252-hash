@@ -1,17 +1,15 @@
 [package]
 name = "poseidon252-hash"
 version = "0.1.0"
-authors = ["Victor Lopez <victor@dusk.network>"]
+authors = [
+  "Victor Lopez <victor@dusk.network>", "CPerezz <carlos@dusk.network>", "zer0 <matteo@dusk.network>", "Kristoffer Ström <kristoffer@dusk.network>"
+]
 edition = "2018"
 
 [dependencies]
-hades252 = { git = "https://github.com/dusk-network/hades252", branch = "vlopes11/no-std-scalar", default-features = false }
-dusk-plonk = { git = "https://github.com/dusk-network/plonk", branch = "vlopes11/no-std-scalar", optional = true }
-
-[dependencies.dusk-bls12_381]
-git = "https://github.com/dusk-network/bls12_381"
-branch = "vlope11/scalar-no-std"
-default-features = false
+dusk-bls12_381 = { version = "0.3", default-features = false }
+hades252 = { git = "https://github.com/dusk-network/hades252", tag = "v0.10.1", default-features = false }
+dusk-plonk = { version = "0.3", optional = true }
 
 [dev-dependencies]
 anyhow = "1.0"
@@ -19,4 +17,4 @@ rand = "0.7"
 
 [features]
 default = ["std"]
-std = ["hades252/default", "dusk-plonk"]
+std = ["dusk-bls12_381/default", "hades252/default", "dusk-plonk"]

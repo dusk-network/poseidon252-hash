@@ -1,5 +1,5 @@
 use core::cmp;
-use dusk_bls12_381::Scalar;
+use dusk_bls12_381::BlsScalar;
 use hades252::strategies::{ScalarStrategy, Strategy};
 
 #[cfg(feature = "std")]
@@ -16,7 +16,7 @@ pub const fn width() -> usize {
 
 /// Truncate a set of messages to [`width()`] and set the first element as the bitflags
 /// representing the provided input
-pub fn prepare_input(input: &[Scalar], perm: &mut [Scalar; hades252::WIDTH]) {
+pub fn prepare_input(input: &[BlsScalar], perm: &mut [BlsScalar; hades252::WIDTH]) {
     let n = cmp::min(input.len(), width());
 
     let mut mask = 0;
@@ -24,13 +24,13 @@ pub fn prepare_input(input: &[Scalar], perm: &mut [Scalar; hades252::WIDTH]) {
         mask |= flag;
         flag << 1
     });
-    perm[0] = Scalar::from(mask);
+    perm[0] = BlsScalar::from(mask);
 
     perm[1..n + 1].copy_from_slice(&input[0..n]);
 }
 
 /// Perform the Hades252 permutation
-pub fn permutate(input: &mut [Scalar; hades252::WIDTH]) -> Scalar {
+pub fn permutate(input: &mut [BlsScalar; hades252::WIDTH]) -> BlsScalar {
     ScalarStrategy::new().perm(input);
 
     input[1]
@@ -41,8 +41,8 @@ pub fn permutate(input: &mut [Scalar; hades252::WIDTH]) -> Scalar {
 /// The input will be truncated with [`prepare_input`]
 ///
 /// The permutation is provided by [`permutate`]
-pub fn hash(input: &[Scalar]) -> Scalar {
-    let mut perm = [Scalar::zero(); hades252::WIDTH];
+pub fn hash(input: &[BlsScalar]) -> BlsScalar {
+    let mut perm = [BlsScalar::zero(); hades252::WIDTH];
     prepare_input(input, &mut perm);
     permutate(&mut perm)
 }
@@ -54,7 +54,7 @@ pub fn hash(input: &[Scalar]) -> Scalar {
 #[cfg(feature = "std")]
 pub fn prepare_input_gadget(
     composer: &mut StandardComposer,
-    input: &[Scalar],
+    input: &[BlsScalar],
     perm: &mut [Variable; hades252::WIDTH],
 ) {
     let n = cmp::min(input.len(), width());
@@ -65,7 +65,7 @@ pub fn prepare_input_gadget(
         flag << 1
     });
 
-    let flag = Scalar::from(mask);
+    let flag = BlsScalar::from(mask);
     let flag = composer.add_input(flag);
     perm[0] = flag;
 
@@ -92,7 +92,7 @@ pub fn permutate_gadget(
 ///
 /// Mirror the implementation of [`hash`] for a circuit
 #[cfg(feature = "std")]
-pub fn hash_gadget(composer: &mut StandardComposer, input: &[Scalar]) -> Variable {
+pub fn hash_gadget(composer: &mut StandardComposer, input: &[BlsScalar]) -> Variable {
     let zero = composer.add_witness_to_circuit_description(BlsScalar::zero());
 
     let mut perm = [zero; hades252::WIDTH];
@@ -104,7 +104,7 @@ pub fn hash_gadget(composer: &mut StandardComposer, input: &[Scalar]) -> Variabl
 #[cfg(test)]
 mod tests {
     use crate::merkle::{hash, prepare_input, width};
-    use dusk_bls12_381::Scalar;
+    use dusk_bls12_381::BlsScalar;
 
     #[cfg(feature = "std")]
     use crate::merkle::hash_gadget;
@@ -115,7 +115,7 @@ mod tests {
 
     #[test]
     fn bitflags() {
-        let mut perm = [Scalar::zero(); hades252::WIDTH];
+        let mut perm = [BlsScalar::zero(); hades252::WIDTH];
 
         // Test all possible bitflags for a constant width 5
         //
@@ -123,38 +123,38 @@ mod tests {
         assert_eq!(width(), 4);
 
         prepare_input(&[], &mut perm);
-        assert_eq!(Scalar::from(0b0000), perm[0]);
+        assert_eq!(BlsScalar::from(0b0000), perm[0]);
 
-        prepare_input(&[Scalar::zero(); 1], &mut perm);
-        assert_eq!(Scalar::from(0b0001), perm[0]);
+        prepare_input(&[BlsScalar::zero(); 1], &mut perm);
+        assert_eq!(BlsScalar::from(0b0001), perm[0]);
 
-        prepare_input(&[Scalar::zero(); 2], &mut perm);
-        assert_eq!(Scalar::from(0b0011), perm[0]);
+        prepare_input(&[BlsScalar::zero(); 2], &mut perm);
+        assert_eq!(BlsScalar::from(0b0011), perm[0]);
 
-        prepare_input(&[Scalar::zero(); 3], &mut perm);
-        assert_eq!(Scalar::from(0b0111), perm[0]);
+        prepare_input(&[BlsScalar::zero(); 3], &mut perm);
+        assert_eq!(BlsScalar::from(0b0111), perm[0]);
 
-        prepare_input(&[Scalar::zero(); 4], &mut perm);
-        assert_eq!(Scalar::from(0b1111), perm[0]);
+        prepare_input(&[BlsScalar::zero(); 4], &mut perm);
+        assert_eq!(BlsScalar::from(0b1111), perm[0]);
 
-        prepare_input(&[Scalar::zero(); 5], &mut perm);
-        assert_eq!(Scalar::from(0b1111), perm[0]);
+        prepare_input(&[BlsScalar::zero(); 5], &mut perm);
+        assert_eq!(BlsScalar::from(0b1111), perm[0]);
 
-        prepare_input(&[Scalar::zero(); 6], &mut perm);
-        assert_eq!(Scalar::from(0b1111), perm[0]);
+        prepare_input(&[BlsScalar::zero(); 6], &mut perm);
+        assert_eq!(BlsScalar::from(0b1111), perm[0]);
 
-        prepare_input(&[Scalar::zero(); 7], &mut perm);
-        assert_eq!(Scalar::from(0b1111), perm[0]);
+        prepare_input(&[BlsScalar::zero(); 7], &mut perm);
+        assert_eq!(BlsScalar::from(0b1111), perm[0]);
 
-        prepare_input(&[Scalar::zero(); 8], &mut perm);
-        assert_eq!(Scalar::from(0b1111), perm[0]);
+        prepare_input(&[BlsScalar::zero(); 8], &mut perm);
+        assert_eq!(BlsScalar::from(0b1111), perm[0]);
     }
 
     #[test]
     fn merkle_deterministic() {
-        let a = hash(&[Scalar::from(32), Scalar::from(31)]);
-        let b = hash(&[Scalar::from(32), Scalar::from(31)]);
-        let c = hash(&[Scalar::from(32), Scalar::from(33)]);
+        let a = hash(&[BlsScalar::from(32), BlsScalar::from(31)]);
+        let b = hash(&[BlsScalar::from(32), BlsScalar::from(31)]);
+        let c = hash(&[BlsScalar::from(32), BlsScalar::from(33)]);
 
         assert_eq!(a, b);
         assert_ne!(a, c);
@@ -173,9 +173,9 @@ mod tests {
             label: &'static [u8],
             ck: &CommitKey,
             ok: &OpeningKey,
-            input: &[Scalar],
+            input: &[BlsScalar],
         ) -> Result<()> {
-            let gadget_tester = |composer: &mut StandardComposer, input: &[Scalar]| {
+            let gadget_tester = |composer: &mut StandardComposer, input: &[BlsScalar]| {
                 let hash = hash(input);
                 let hash_p = hash_gadget(composer, input);
 
@@ -197,23 +197,21 @@ mod tests {
         }
 
         execute(label, &ck, &ok, &[])?;
-        execute(label, &ck, &ok, &[Scalar::from(25)])?;
-        execute(label, &ck, &ok, &[Scalar::from(54), Scalar::from(43728)])?;
+        execute(label, &ck, &ok, &[BlsScalar::from(25)])?;
         execute(
             label,
             &ck,
             &ok,
-            &[Scalar::from(54), Scalar::from(43728), Scalar::from(123)],
+            &[BlsScalar::from(54), BlsScalar::from(43728)],
         )?;
         execute(
             label,
             &ck,
             &ok,
             &[
-                Scalar::from(54),
-                Scalar::from(43728),
-                Scalar::from(5846),
-                Scalar::from(9834),
+                BlsScalar::from(54),
+                BlsScalar::from(43728),
+                BlsScalar::from(123),
             ],
         )?;
         execute(
@@ -221,11 +219,22 @@ mod tests {
             &ck,
             &ok,
             &[
-                Scalar::from(54),
-                Scalar::from(43728),
-                Scalar::from(5846),
-                Scalar::from(9834),
-                Scalar::from(23984),
+                BlsScalar::from(54),
+                BlsScalar::from(43728),
+                BlsScalar::from(5846),
+                BlsScalar::from(9834),
+            ],
+        )?;
+        execute(
+            label,
+            &ck,
+            &ok,
+            &[
+                BlsScalar::from(54),
+                BlsScalar::from(43728),
+                BlsScalar::from(5846),
+                BlsScalar::from(9834),
+                BlsScalar::from(23984),
             ],
         )?;
 
